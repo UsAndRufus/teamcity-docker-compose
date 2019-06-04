@@ -2,7 +2,7 @@ version: '2'
 
 services:
 
-  postgres:
+  postgres_server:
     build: ./postgres
     volumes:
       - "/opt/teamcity/pg_data:/var/lib/postgresql/data"
@@ -18,47 +18,64 @@ services:
     hostname: ${VIRTUAL_HOST}
     volumes:
       - "/opt/teamcity/data:/data/teamcity_server/datadir"
-      - "/opt/teamcity/logs:/opt/teamcity/logs"
+      - "/opt/teamcity/log:/opt/teamcity/logs"
     ports:
       - 8111:8111
     depends_on:
-      - postgres
+      - postgres_server
     env_file: .env
     restart: always
 
   agent:
-    build: ./agents/python-node-yarn
-    env_file: .env
+    build: https://github.com/UsAndRufus/docker-teamcity-agent-rbenv.git
+    environment:
+      - AGENT_NAME=rbenv builder
+      - DATABASE_URL=postgresql://prayermate:dev@postgres:5432/prayermate_test?encoding=UTF8&pool=5&timeout=5000
+    volumes:
+      - 'teamcity_agent_rbenv_conf:/data/teamcity_agent/conf'
+      - '/opt/teamcity/platform/system:/data/teamcity_agent/platform/system'
     restart: always
     depends_on:
-      - redis
-    # if you need docker inside the agent (http://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/)
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - postgres_agent
 
-  nginx:
-    image: nginx
-    links:
-      - server
-    volumes:
-      - "./server/tc.conf:/etc/nginx/conf.d/default.conf"
-    env_file: .env
-
-  nginx-proxy:
-    image: jwilder/nginx-proxy
+  postgres_agent:
+    image: postgres:9.6.13
+    restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - '5432:5432'
+    environment:
+      - POSTGRES_DB=prayermate
+      - POSTGRES_USER=prayermate
+      - POSTGRES_PASSWORD=dev
     volumes:
-      - "./nginx/vhost.d:/etc/nginx/vhost.d"
-      - "./nginx/html:/usr/share/nginx/html"
-      - "./nginx/certs:/etc/nginx/certs"
-      - "/var/run/docker.sock:/tmp/docker.sock:ro"
-      - "./server/proxy.conf:/etc/nginx/conf.d/proxy.conf"
+      - ./tmp/db:/var/lib/postgresql/data
 
-  letsencrypt-nginx-proxy-companion:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    volumes_from:
-      - "nginx-proxy"
+#  nginx:
+#    image: nginx
+#    links:
+#      - server
+#    volumes:
+#      - "./server/tc.conf:/etc/nginx/conf.d/default.conf"
+#    env_file: .env
+#
+#  nginx-proxy:
+#    image: jwilder/nginx-proxy
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - "./nginx/vhost.d:/etc/nginx/vhost.d"
+#      - "./nginx/html:/usr/share/nginx/html"
+#      - "./nginx/certs:/etc/nginx/certs"
+#      - "/var/run/docker.sock:/tmp/docker.sock:ro"
+#      - "./server/proxy.conf:/etc/nginx/conf.d/proxy.conf"
+#
+#  letsencrypt-nginx-proxy-companion:
+#    image: jrcs/letsencrypt-nginx-proxy-companion
+#    volumes:
+#      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+#    volumes_from:
+#      - "nginx-proxy"
+
+volumes:
+  teamcity_agent_rbenv_conf:
