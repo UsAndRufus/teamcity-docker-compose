@@ -34,7 +34,7 @@ services:
       - '/opt/teamcity/platform/system:/data/teamcity_agent/platform/system'
     restart: always
     depends_on:
-      - postgres_agent
+      - postgres
 
   postgres:
     image: postgres:9.6.13
