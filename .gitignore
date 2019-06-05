@@ -1,2 +1,4 @@
 # My secret ENVs
 .env
+
+nginx/
