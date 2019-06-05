@@ -2,12 +2,14 @@ version: '2'
 
 services:
 
-  postgres_server:
+  postgres:
     build: ./postgres
     volumes:
       - "/opt/teamcity/pg_data:/var/lib/postgresql/data"
       - "/opt/teamcity/pg_backup:/backups"
     env_file: .env
+    ports:
+      - 5342:5342   
     restart: always
 
   server:
@@ -19,7 +21,7 @@ services:
     ports:
       - 8111:8111
     depends_on:
-      - postgres_server
+      - postgres
     env_file: .env
     restart: always
 
@@ -28,25 +30,13 @@ services:
     environment:
       - SERVER_URL=server:8111
       - AGENT_NAME="rbenv builder"
-      - DATABASE_URL=postgresql://prayermate:dev@postgres:5433/prayermate_test?encoding=UTF8&pool=5&timeout=5000
+      - DATABASE_URL=postgresql://prayermate:dev@postgres:5432/prayermate_test?encoding=UTF8&pool=5&timeout=5000
     volumes:
       - 'teamcity_agent_rbenv_conf:/data/teamcity_agent/conf'
       - '/opt/teamcity/platform/system:/data/teamcity_agent/platform/system'
     restart: always
     depends_on:
       - postgres
-
-  postgres:
-    image: postgres:9.6.13
-    restart: always
-    ports:
-      - '5432:5433'
-    environment:
-      - POSTGRES_DB=prayermate
-      - POSTGRES_USER=prayermate
-      - POSTGRES_PASSWORD=dev
-    volumes:
-      - ./tmp/db:/var/lib/postgresql/data
 
 #  nginx:
 #    image: nginx
