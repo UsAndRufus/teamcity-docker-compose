@@ -27,10 +27,7 @@ services:
 
   agent:
     build: https://github.com/UsAndRufus/docker-teamcity-agent-rbenv.git
-    environment:
-      - SERVER_URL=server:8111
-      - AGENT_NAME=rbenv builder
-      - DATABASE_URL=postgresql://prayermate:dev@postgres:5432/prayermate_test?encoding=UTF8&pool=5&timeout=5000
+    env_file: .env
     volumes:
       - 'teamcity_agent_rbenv_conf:/data/teamcity_agent/conf'
       - '/opt/teamcity/platform/system:/data/teamcity_agent/platform/system'
