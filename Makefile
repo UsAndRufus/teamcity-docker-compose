@@ -1,14 +1,12 @@
 # https://github.com/egregors/teamcity-docker-compose
-# Team City 
+# Team City
 
-#COMPOSE_FILE=docker-compose-without-ssl.yml
-#COMPOSE_FILE=docker-compose-minimal.yml
 COMPOSE_FILE=docker-compose.yml
-
 all: uplog
 
 # update & upgrade TC
 update: stop down build uplog
+up: acme uplog
 
 # up and show logs
 uplog:
@@ -22,4 +20,6 @@ build:
 
 down:
 	docker-compose -f $(COMPOSE_FILE) down --rmi all
- 
+
+acme:
+	mkdir -p /opt/traefik && touch /opt/traefik/acme.json && chmod 600 /opt/traefik/acme.json
