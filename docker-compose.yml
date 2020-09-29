@@ -13,8 +13,11 @@ services:
     hostname: ${VIRTUAL_HOST}
     ports:
       - "8111"
+    environment:
+      HUB_URL: http://chrome:4444/wd/hub # for Selenium/Chrome
     depends_on:
       - postgres
+      - chrome # Selenium/Chrome container
     env_file: .env
     labels:
       - "traefik.enable=true"
@@ -110,6 +113,11 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
+
+  chrome:
+    image: selenium/standalone-chrome
+    volumes:
+      - /dev/shm:/dev/shm
 
 volumes:
         teamcity_agent_rbenv_conf:
