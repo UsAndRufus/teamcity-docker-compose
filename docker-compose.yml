@@ -13,11 +13,8 @@ services:
     hostname: ${VIRTUAL_HOST}
     ports:
       - "8111"
-    environment:
-      HUB_URL: http://chrome:4444/wd/hub # for Selenium/Chrome
     depends_on:
       - postgres
-      - chrome # Selenium/Chrome container
     env_file: .env
     labels:
       - "traefik.enable=true"
@@ -39,9 +36,12 @@ services:
       - '/opt/teamcity/platform/system:/data/teamcity_agent/platform/system'
       - "/var/run/docker.sock:/var/run/docker.sock"
     restart: always
+    environment:
+      HUB_URL: http://chrome:4444/wd/hub # for Selenium/Chrome
     depends_on:
       - postgres
       - redis
+      - chrome # Selenium/Chrome container
     #     if you need docker inside the agent
     #     (http://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/)
     labels:
