@@ -80,7 +80,7 @@ services:
         max-file: "5"
 
   traefik:
-    image: traefik
+    image: traefik:1.7
     restart: on-failure
     command:
       - --logLevel=ERROR
